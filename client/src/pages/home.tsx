@@ -296,7 +296,7 @@ export default function Home() {
       </main>
 
       <footer className="relative z-10 mt-16 pb-8 px-4 md:px-8 max-w-7xl mx-auto">
-        <div className="glass-panel rounded-3xl p-8 flex flex-col md:flex-row items-center justify-center gap-4 text-center md:text-left">
+        <div className="glass-panel rounded-3xl p-8 flex flex-col items-center justify-center gap-4 text-center">
           <span className="text-lg md:text-xl font-semibold text-white">Want to play Phantasy Phish?</span>
           <a
             href="https://phishphantasy.live"
