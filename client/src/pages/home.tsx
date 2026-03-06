@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { Search, Play, X, Filter, Music, Calendar, Clock } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { Search, Play, X, Filter, Music, Calendar, Clock, ChevronDown } from "lucide-react";
 
 // Import our generated stock images
 import concert1 from "@/assets/images/concert_1.jpg";
@@ -15,7 +15,7 @@ const MOCK_VIDEOS = [
     title: 'Phish - You Enjoy Myself (12/31/95)', 
     year: '1995', 
     song: 'You Enjoy Myself', 
-    lengthCategory: 'Medium', 
+    lengthCategory: '10-20 min', 
     duration: '15:45', 
     views: '1.2M',
     thumbnail: concert1 
@@ -26,7 +26,7 @@ const MOCK_VIDEOS = [
     title: 'Phish - Tweezer (12/14/95)', 
     year: '1995', 
     song: 'Tweezer', 
-    lengthCategory: 'Long', 
+    lengthCategory: '20+ min', 
     duration: '22:12', 
     views: '850K',
     thumbnail: concert2 
@@ -37,7 +37,7 @@ const MOCK_VIDEOS = [
     title: 'Phish - Harry Hood (Clifford Ball)', 
     year: '1996', 
     song: 'Harry Hood', 
-    lengthCategory: 'Medium', 
+    lengthCategory: '10-20 min', 
     duration: '16:30', 
     views: '2.1M',
     thumbnail: concert3 
@@ -48,7 +48,7 @@ const MOCK_VIDEOS = [
     title: 'Phish - Ghost (Denver 1997)', 
     year: '1997', 
     song: 'Ghost', 
-    lengthCategory: 'Long', 
+    lengthCategory: '20+ min', 
     duration: '21:05', 
     views: '3.4M',
     thumbnail: concert4 
@@ -59,7 +59,7 @@ const MOCK_VIDEOS = [
     title: 'Phish - Fluffhead (12/31/99)', 
     year: '1999', 
     song: 'Fluffhead', 
-    lengthCategory: 'Long', 
+    lengthCategory: '20+ min', 
     duration: '32:45', 
     views: '4.2M',
     thumbnail: concert1 
@@ -70,16 +70,66 @@ const MOCK_VIDEOS = [
     title: 'Phish - Chalk Dust Torture (7/10/99)', 
     year: '1999', 
     song: 'Chalk Dust Torture', 
-    lengthCategory: 'Short', 
+    lengthCategory: '5-10 min', 
     duration: '8:12', 
     views: '920K',
     thumbnail: concert2 
   },
+  { 
+    id: '7', 
+    videoId: 'ysz5S6PUM-U', 
+    title: 'Phish - Bouncing Around The Room (A Live One)', 
+    year: '1995', 
+    song: 'Bouncing Around The Room', 
+    lengthCategory: 'Under 5 min', 
+    duration: '3:58', 
+    views: '1.5M',
+    thumbnail: concert3 
+  },
+  { 
+    id: '8', 
+    videoId: 'lPIoO_L2B9c', 
+    title: 'Phish - Reba (Halloween 1994)', 
+    year: '1994', 
+    song: 'Reba', 
+    lengthCategory: '10-20 min', 
+    duration: '14:20', 
+    views: '750K',
+    thumbnail: concert4 
+  },
+  { 
+    id: '9', 
+    videoId: 'tw5D_mZl3pQ', 
+    title: 'Phish - Bathtub Gin (Went 1997)', 
+    year: '1997', 
+    song: 'Bathtub Gin', 
+    lengthCategory: '10-20 min', 
+    duration: '18:15', 
+    views: '1.1M',
+    thumbnail: concert1 
+  }
 ];
 
-const YEARS = ["All Years", "1995", "1996", "1997", "1998", "1999", "2000"];
-const SONGS = ["All Songs", "You Enjoy Myself", "Tweezer", "Harry Hood", "Ghost", "Fluffhead", "Chalk Dust Torture"];
-const LENGTHS = ["All Lengths", "Short", "Medium", "Long"];
+const currentYear = new Date().getFullYear();
+const YEARS = [
+  "All Years", 
+  ...Array.from({ length: currentYear - 1985 + 1 }, (_, i) => (currentYear - i).toString())
+];
+
+const SONGS = [
+  "All Songs", 
+  "Bathtub Gin",
+  "Bouncing Around The Room",
+  "Chalk Dust Torture",
+  "Fluffhead",
+  "Ghost", 
+  "Harry Hood", 
+  "Reba",
+  "Tweezer", 
+  "You Enjoy Myself"
+];
+
+const LENGTHS = ["All Lengths", "Under 5 min", "5-10 min", "10-20 min", "20+ min"];
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -87,6 +137,7 @@ export default function Home() {
   const [songFilter, setSongFilter] = useState("All Songs");
   const [lengthFilter, setLengthFilter] = useState("All Lengths");
   const [playingVideo, setPlayingVideo] = useState<typeof MOCK_VIDEOS[0] | null>(null);
+  const [displayCount, setDisplayCount] = useState(5);
 
   const filteredVideos = useMemo(() => {
     return MOCK_VIDEOS.filter((video) => {
@@ -98,6 +149,17 @@ export default function Home() {
       return matchesSearch && matchesYear && matchesSong && matchesLength;
     });
   }, [searchQuery, yearFilter, songFilter, lengthFilter]);
+
+  const displayedVideos = filteredVideos.slice(0, displayCount);
+
+  // Reset display count when filters change
+  useEffect(() => {
+    setDisplayCount(5);
+  }, [searchQuery, yearFilter, songFilter, lengthFilter]);
+
+  const handleLoadMore = () => {
+    setDisplayCount(prev => prev + 5);
+  };
 
   return (
     <div className="min-h-screen pb-24 lg:pb-12 bg-background overflow-x-hidden">
@@ -181,50 +243,65 @@ export default function Home() {
           </h2>
         </div>
 
-        {filteredVideos.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredVideos.map((video) => (
-              <div 
-                key={video.id} 
-                className="group glass-panel rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 transition-all duration-300 hover:neon-glow"
-                onClick={() => setPlayingVideo(video)}
-                data-testid={`card-video-${video.id}`}
-              >
-                <div className="relative aspect-video overflow-hidden">
-                  <img 
-                    src={video.thumbnail} 
-                    alt={video.title} 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80 group-hover:opacity-100"
-                  />
-                  <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors duration-300" />
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="bg-primary/90 text-white rounded-full p-4 transform scale-75 group-hover:scale-100 transition-transform duration-300">
-                      <Play className="w-8 h-8 fill-current ml-1" />
+        {displayedVideos.length > 0 ? (
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {displayedVideos.map((video) => (
+                <div 
+                  key={video.id} 
+                  className="group glass-panel rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 transition-all duration-300 hover:neon-glow flex flex-col"
+                  onClick={() => setPlayingVideo(video)}
+                  data-testid={`card-video-${video.id}`}
+                >
+                  <div className="relative aspect-video overflow-hidden">
+                    <img 
+                      src={video.thumbnail} 
+                      alt={video.title} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80 group-hover:opacity-100"
+                    />
+                    <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors duration-300" />
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="bg-primary/90 text-white rounded-full p-4 transform scale-75 group-hover:scale-100 transition-transform duration-300">
+                        <Play className="w-8 h-8 fill-current ml-1" />
+                      </div>
+                    </div>
+                    <div className="absolute bottom-2 right-2 bg-black/80 backdrop-blur text-white text-xs font-medium px-2 py-1 rounded-md">
+                      {video.duration}
                     </div>
                   </div>
-                  <div className="absolute bottom-2 right-2 bg-black/80 backdrop-blur text-white text-xs font-medium px-2 py-1 rounded-md">
-                    {video.duration}
+                  
+                  <div className="p-5 flex-1 flex flex-col">
+                    <h3 className="font-bold text-lg leading-tight mb-2 line-clamp-2 text-white group-hover:text-primary transition-colors flex-1">
+                      {video.title}
+                    </h3>
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      <span className="text-xs font-medium bg-primary/20 text-primary px-2.5 py-1 rounded-full border border-primary/30">
+                        {video.year}
+                      </span>
+                      <span className="text-xs font-medium bg-secondary/20 text-secondary px-2.5 py-1 rounded-full border border-secondary/30">
+                        {video.song}
+                      </span>
+                      <span className="text-xs font-medium bg-white/10 text-white/80 px-2.5 py-1 rounded-full border border-white/10">
+                        {video.lengthCategory}
+                      </span>
+                    </div>
                   </div>
                 </div>
-                
-                <div className="p-5">
-                  <h3 className="font-bold text-lg leading-tight mb-2 line-clamp-2 text-white group-hover:text-primary transition-colors">
-                    {video.title}
-                  </h3>
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    <span className="text-xs font-medium bg-primary/20 text-primary px-2.5 py-1 rounded-full border border-primary/30">
-                      {video.year}
-                    </span>
-                    <span className="text-xs font-medium bg-secondary/20 text-secondary px-2.5 py-1 rounded-full border border-secondary/30">
-                      {video.song}
-                    </span>
-                    <span className="text-xs font-medium bg-white/10 text-white/80 px-2.5 py-1 rounded-full border border-white/10">
-                      {video.views} views
-                    </span>
-                  </div>
-                </div>
+              ))}
+            </div>
+            
+            {/* Load More Button */}
+            {displayCount < filteredVideos.length && (
+              <div className="flex justify-center mt-8">
+                <button
+                  onClick={handleLoadMore}
+                  className="flex items-center gap-2 px-6 py-3 bg-card border border-white/10 hover:border-primary/50 text-white font-medium rounded-full transition-all hover:neon-glow hover:text-primary"
+                  data-testid="button-load-more"
+                >
+                  Load More <ChevronDown className="w-4 h-4" />
+                </button>
               </div>
-            ))}
+            )}
           </div>
         ) : (
           <div className="glass-panel rounded-3xl p-12 text-center flex flex-col items-center justify-center">
