@@ -1,23 +1,6 @@
-import { useState, useCallback } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { Search, Play, X, Filter, Music, Calendar, Clock, ChevronDown, Loader2 } from "lucide-react";
-
-interface Video {
-  id: string;
-  videoId: string;
-  title: string;
-  thumbnail: string;
-  channelTitle: string;
-  publishedAt: string;
-  duration: string;
-  viewCount: string;
-}
-
-interface SearchResponse {
-  videos: Video[];
-  nextPageToken: string | null;
-  totalResults: number;
-}
+import { searchYouTube, type Video, type SearchResponse } from "@/lib/youtube";
 
 const currentYear = new Date().getFullYear();
 const YEARS = [
@@ -36,40 +19,30 @@ export default function Home() {
   const [allVideos, setAllVideos] = useState<Video[]>([]);
   const [nextPageToken, setNextPageToken] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const buildSearchParams = useCallback((pageToken?: string) => {
-    const params = new URLSearchParams();
-    if (searchQuery) params.set("q", searchQuery);
-    if (yearFilter !== "All Years") params.set("year", yearFilter);
-    if (songFilter) params.set("song", songFilter);
-    if (lengthFilter !== "All Lengths") params.set("length", lengthFilter);
-    if (pageToken) params.set("pageToken", pageToken);
-    params.set("maxResults", "5");
-    return params.toString();
-  }, [searchQuery, yearFilter, songFilter, lengthFilter]);
-
-  const { isLoading, refetch } = useQuery<SearchResponse>({
-    queryKey: ["youtube-search", searchQuery, yearFilter, songFilter, lengthFilter],
-    queryFn: async () => {
-      const res = await fetch(`/api/search?${buildSearchParams()}`);
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message || "Search failed");
-      }
-      const data = await res.json();
-      setAllVideos(data.videos);
-      setNextPageToken(data.nextPageToken);
-      return data;
-    },
-    enabled: false,
-  });
-
-  const handleSearch = () => {
+  const handleSearch = async () => {
     setHasSearched(true);
+    setIsLoading(true);
+    setError(null);
     setAllVideos([]);
     setNextPageToken(null);
-    refetch();
+    try {
+      const data = await searchYouTube({
+        query: searchQuery,
+        year: yearFilter,
+        song: songFilter || undefined,
+        lengthFilter: lengthFilter !== "All Lengths" ? lengthFilter : undefined,
+      });
+      setAllVideos(data.videos);
+      setNextPageToken(data.nextPageToken);
+    } catch (err: any) {
+      setError(err.message || "Search failed");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -80,12 +53,15 @@ export default function Home() {
     if (!nextPageToken || isLoadingMore) return;
     setIsLoadingMore(true);
     try {
-      const res = await fetch(`/api/search?${buildSearchParams(nextPageToken)}`);
-      if (res.ok) {
-        const data: SearchResponse = await res.json();
-        setAllVideos(prev => [...prev, ...data.videos]);
-        setNextPageToken(data.nextPageToken);
-      }
+      const data = await searchYouTube({
+        query: searchQuery,
+        year: yearFilter,
+        song: songFilter || undefined,
+        lengthFilter: lengthFilter !== "All Lengths" ? lengthFilter : undefined,
+        pageToken: nextPageToken,
+      });
+      setAllVideos(prev => [...prev, ...data.videos]);
+      setNextPageToken(data.nextPageToken);
     } catch (err) {
       console.error("Load more failed:", err);
     } finally {
@@ -185,6 +161,18 @@ export default function Home() {
             <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
             <p className="text-muted-foreground text-lg">Searching YouTube...</p>
           </div>
+        ) : error ? (
+          <div className="glass-panel rounded-3xl p-12 text-center flex flex-col items-center justify-center max-w-2xl mx-auto">
+            <X className="w-16 h-16 text-destructive mb-4 opacity-60" />
+            <h3 className="text-2xl font-bold mb-2">Search Error</h3>
+            <p className="text-muted-foreground">{error}</p>
+            <button
+              onClick={handleSearch}
+              className="mt-6 px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
         ) : allVideos.length > 0 ? (
           <div className="space-y-8">
             <div className="flex items-center justify-between mb-2">
@@ -194,9 +182,9 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {allVideos.map((video) => (
+              {allVideos.map((video, index) => (
                 <div
-                  key={video.id}
+                  key={`${video.id}-${index}`}
                   className="group glass-panel rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 transition-all duration-300 hover:neon-glow flex flex-col"
                   onClick={() => setPlayingVideo(video)}
                   data-testid={`card-video-${video.id}`}
@@ -267,6 +255,7 @@ export default function Home() {
                 setSongFilter("");
                 setLengthFilter("All Lengths");
                 setHasSearched(false);
+                setError(null);
               }}
               className="mt-6 px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-colors"
               data-testid="button-clear-filters"
