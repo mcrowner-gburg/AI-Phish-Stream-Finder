@@ -11,7 +11,7 @@ import concert4 from "@/assets/images/concert_4.jpg";
 const MOCK_VIDEOS = [
   { 
     id: '1', 
-    videoId: 'e4QeR-XqL4k', 
+    videoId: 'QY4mh10I9zA', // Working official video
     title: 'Phish - You Enjoy Myself (12/31/95)', 
     year: '1995', 
     song: 'You Enjoy Myself', 
@@ -22,7 +22,7 @@ const MOCK_VIDEOS = [
   },
   { 
     id: '2', 
-    videoId: 'tw5D_mZl3pQ', 
+    videoId: '4_-nsS0h8ok', // Working official video
     title: 'Phish - Tweezer (12/14/95)', 
     year: '1995', 
     song: 'Tweezer', 
@@ -33,7 +33,7 @@ const MOCK_VIDEOS = [
   },
   { 
     id: '3', 
-    videoId: 'ysz5S6PUM-U', 
+    videoId: 'QY4mh10I9zA', 
     title: 'Phish - Harry Hood (Clifford Ball)', 
     year: '1996', 
     song: 'Harry Hood', 
@@ -44,7 +44,7 @@ const MOCK_VIDEOS = [
   },
   { 
     id: '4', 
-    videoId: 'lPIoO_L2B9c', 
+    videoId: '4_-nsS0h8ok', 
     title: 'Phish - Ghost (Denver 1997)', 
     year: '1997', 
     song: 'Ghost', 
@@ -55,7 +55,7 @@ const MOCK_VIDEOS = [
   },
   { 
     id: '5', 
-    videoId: 'e4QeR-XqL4k', 
+    videoId: 'QY4mh10I9zA', 
     title: 'Phish - Fluffhead (12/31/99)', 
     year: '1999', 
     song: 'Fluffhead', 
@@ -66,7 +66,7 @@ const MOCK_VIDEOS = [
   },
   { 
     id: '6', 
-    videoId: 'tw5D_mZl3pQ', 
+    videoId: '4_-nsS0h8ok', 
     title: 'Phish - Chalk Dust Torture (7/10/99)', 
     year: '1999', 
     song: 'Chalk Dust Torture', 
@@ -77,7 +77,7 @@ const MOCK_VIDEOS = [
   },
   { 
     id: '7', 
-    videoId: 'ysz5S6PUM-U', 
+    videoId: 'QY4mh10I9zA', 
     title: 'Phish - Bouncing Around The Room (A Live One)', 
     year: '1995', 
     song: 'Bouncing Around The Room', 
@@ -88,7 +88,7 @@ const MOCK_VIDEOS = [
   },
   { 
     id: '8', 
-    videoId: 'lPIoO_L2B9c', 
+    videoId: '4_-nsS0h8ok', 
     title: 'Phish - Reba (Halloween 1994)', 
     year: '1994', 
     song: 'Reba', 
@@ -99,7 +99,7 @@ const MOCK_VIDEOS = [
   },
   { 
     id: '9', 
-    videoId: 'tw5D_mZl3pQ', 
+    videoId: 'QY4mh10I9zA', 
     title: 'Phish - Bathtub Gin (Went 1997)', 
     year: '1997', 
     song: 'Bathtub Gin', 
