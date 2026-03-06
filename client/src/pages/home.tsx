@@ -295,6 +295,21 @@ export default function Home() {
         )}
       </main>
 
+      <footer className="relative z-10 mt-16 pb-8 px-4 md:px-8 max-w-7xl mx-auto">
+        <div className="glass-panel rounded-3xl p-8 flex flex-col md:flex-row items-center justify-center gap-4 text-center md:text-left">
+          <span className="text-lg md:text-xl font-semibold text-white">Want to play Phantasy Phish?</span>
+          <a
+            href="https://phishphantasy.live"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl transition-colors"
+            data-testid="link-phantasy-phish"
+          >
+            Check It Out
+          </a>
+        </div>
+      </footer>
+
       {playingVideo && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 animate-in fade-in duration-300">
           <div
