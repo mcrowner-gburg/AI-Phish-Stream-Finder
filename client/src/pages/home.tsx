@@ -111,7 +111,7 @@ export default function Home() {
       <header className="relative z-10 pt-12 pb-8 px-4 md:px-8 max-w-7xl mx-auto">
         <div className="flex flex-col items-center text-center mb-10">
           <h1 className="text-5xl md:text-7xl font-bold tracking-tighter mb-4 text-transparent bg-clip-text bg-gradient-to-r from-primary via-purple-400 to-secondary">
-            PhishStream
+            PhishPhinder
           </h1>
           <p className="text-muted-foreground text-lg md:text-xl max-w-2xl font-light">
             Dive into the archives. Find that perfect jam.
