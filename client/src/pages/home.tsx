@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Play, X, Filter, Music, Calendar, Clock, ChevronDown, Loader2 } from "lucide-react";
+import { Search, Play, X, Filter, Music, Calendar, Clock, CalendarDays, ChevronDown, Loader2 } from "lucide-react";
 
 interface Video {
   id: string;
@@ -31,6 +31,7 @@ function buildSearchParams(params: {
   year: string;
   song: string;
   length: string;
+  date: string;
   pageToken?: string;
 }): string {
   const p = new URLSearchParams();
@@ -38,6 +39,7 @@ function buildSearchParams(params: {
   if (params.year !== "All Years") p.set("year", params.year);
   if (params.song) p.set("song", params.song);
   if (params.length !== "All Lengths") p.set("length", params.length);
+  if (params.date) p.set("date", params.date);
   if (params.pageToken) p.set("pageToken", params.pageToken);
   p.set("maxResults", "5");
   return p.toString();
@@ -48,6 +50,7 @@ export default function Home() {
   const [yearFilter, setYearFilter] = useState("All Years");
   const [songFilter, setSongFilter] = useState("");
   const [lengthFilter, setLengthFilter] = useState("All Lengths");
+  const [dateFilter, setDateFilter] = useState("");
   const [playingVideo, setPlayingVideo] = useState<Video | null>(null);
   const [allVideos, setAllVideos] = useState<Video[]>([]);
   const [nextPageToken, setNextPageToken] = useState<string | null>(null);
@@ -63,7 +66,7 @@ export default function Home() {
     setAllVideos([]);
     setNextPageToken(null);
     try {
-      const qs = buildSearchParams({ query: searchQuery, year: yearFilter, song: songFilter, length: lengthFilter });
+      const qs = buildSearchParams({ query: searchQuery, year: yearFilter, song: songFilter, length: lengthFilter, date: dateFilter });
       const res = await fetch(`/api/search?${qs}`);
       const data: SearchResponse = await res.json();
       if (!res.ok) throw new Error((data as any).message || "Search failed");
@@ -84,7 +87,7 @@ export default function Home() {
     if (!nextPageToken || isLoadingMore) return;
     setIsLoadingMore(true);
     try {
-      const qs = buildSearchParams({ query: searchQuery, year: yearFilter, song: songFilter, length: lengthFilter, pageToken: nextPageToken });
+      const qs = buildSearchParams({ query: searchQuery, year: yearFilter, song: songFilter, length: lengthFilter, date: dateFilter, pageToken: nextPageToken });
       const res = await fetch(`/api/search?${qs}`);
       if (res.ok) {
         const data: SearchResponse = await res.json();
@@ -137,7 +140,7 @@ export default function Home() {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="relative">
               <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-primary w-5 h-5" />
               <select
@@ -148,6 +151,19 @@ export default function Home() {
               >
                 {YEARS.map(y => <option key={y} value={y} className="bg-background">{y}</option>)}
               </select>
+            </div>
+
+            <div className="relative">
+              <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Show date (e.g. 12/31/1995)..."
+                className="w-full bg-input/50 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white placeholder:text-white/40 appearance-none focus:outline-none focus:ring-2 focus:ring-primary"
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+                onKeyDown={handleKeyDown}
+                data-testid="input-date"
+              />
             </div>
 
             <div className="relative">
@@ -283,6 +299,7 @@ export default function Home() {
                 setYearFilter("All Years");
                 setSongFilter("");
                 setLengthFilter("All Lengths");
+                setDateFilter("");
                 setHasSearched(false);
                 setError(null);
               }}

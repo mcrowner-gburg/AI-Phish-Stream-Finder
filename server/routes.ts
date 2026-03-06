@@ -53,12 +53,14 @@ export async function registerRoutes(
       const year = req.query.year as string;
       const song = req.query.song as string;
       const lengthFilter = req.query.length as string;
+      const dateFilter = req.query.date as string;
       const pageToken = req.query.pageToken as string;
       const maxResults = parseInt(req.query.maxResults as string) || 5;
 
       let searchTerms = "phish live";
       if (query) searchTerms += ` ${query}`;
       if (song) searchTerms += ` "${song}"`;
+      if (dateFilter) searchTerms += ` "${dateFilter}"`;
 
       const searchParams = new URLSearchParams({
         part: "snippet",
