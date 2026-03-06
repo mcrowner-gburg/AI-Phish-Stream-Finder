@@ -1,6 +1,22 @@
 import { useState } from "react";
 import { Search, Play, X, Filter, Music, Calendar, Clock, ChevronDown, Loader2 } from "lucide-react";
-import { searchYouTube, type Video, type SearchResponse } from "@/lib/youtube";
+
+interface Video {
+  id: string;
+  videoId: string;
+  title: string;
+  thumbnail: string;
+  channelTitle: string;
+  publishedAt: string;
+  duration: string;
+  viewCount: string;
+}
+
+interface SearchResponse {
+  videos: Video[];
+  nextPageToken: string | null;
+  totalResults: number;
+}
 
 const currentYear = new Date().getFullYear();
 const YEARS = [
@@ -9,6 +25,23 @@ const YEARS = [
 ];
 
 const LENGTHS = ["All Lengths", "Under 5 min", "5-10 min", "10-20 min", "20+ min"];
+
+function buildSearchParams(params: {
+  query: string;
+  year: string;
+  song: string;
+  length: string;
+  pageToken?: string;
+}): string {
+  const p = new URLSearchParams();
+  if (params.query) p.set("q", params.query);
+  if (params.year !== "All Years") p.set("year", params.year);
+  if (params.song) p.set("song", params.song);
+  if (params.length !== "All Lengths") p.set("length", params.length);
+  if (params.pageToken) p.set("pageToken", params.pageToken);
+  p.set("maxResults", "5");
+  return p.toString();
+}
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -30,12 +63,10 @@ export default function Home() {
     setAllVideos([]);
     setNextPageToken(null);
     try {
-      const data = await searchYouTube({
-        query: searchQuery,
-        year: yearFilter,
-        song: songFilter || undefined,
-        lengthFilter: lengthFilter !== "All Lengths" ? lengthFilter : undefined,
-      });
+      const qs = buildSearchParams({ query: searchQuery, year: yearFilter, song: songFilter, length: lengthFilter });
+      const res = await fetch(`/api/search?${qs}`);
+      const data: SearchResponse = await res.json();
+      if (!res.ok) throw new Error((data as any).message || "Search failed");
       setAllVideos(data.videos);
       setNextPageToken(data.nextPageToken);
     } catch (err: any) {
@@ -53,15 +84,13 @@ export default function Home() {
     if (!nextPageToken || isLoadingMore) return;
     setIsLoadingMore(true);
     try {
-      const data = await searchYouTube({
-        query: searchQuery,
-        year: yearFilter,
-        song: songFilter || undefined,
-        lengthFilter: lengthFilter !== "All Lengths" ? lengthFilter : undefined,
-        pageToken: nextPageToken,
-      });
-      setAllVideos(prev => [...prev, ...data.videos]);
-      setNextPageToken(data.nextPageToken);
+      const qs = buildSearchParams({ query: searchQuery, year: yearFilter, song: songFilter, length: lengthFilter, pageToken: nextPageToken });
+      const res = await fetch(`/api/search?${qs}`);
+      if (res.ok) {
+        const data: SearchResponse = await res.json();
+        setAllVideos(prev => [...prev, ...data.videos]);
+        setNextPageToken(data.nextPageToken);
+      }
     } catch (err) {
       console.error("Load more failed:", err);
     } finally {
